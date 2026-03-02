@@ -1,3 +1,5 @@
+LDLIBS := -lyara
+
 .PHONY: build clean
 
 build: main

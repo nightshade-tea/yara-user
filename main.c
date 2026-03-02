@@ -6,6 +6,12 @@
 #define pe(err) \
   error ("(%s:%d) %s() failed: %d\n", __FILE__, __LINE__, __func__, err)
 
+#define nzpe(err) \
+  if (err) pe (err)
+
+#define chk(expr) \
+  nzpe ((expr))
+
 static __attribute__ ((noreturn)) void
 error (const char *restrict format, ...)
 {
@@ -22,11 +28,8 @@ int main ()
 {
   int err;
 
-  if ((err = yr_initialize ()))
-    pe (err);
-
-  if ((err = yr_finalize()))
-    pe (err);
+  chk (yr_initialize ());
+  chk (yr_finalize ());
 
   return EXIT_SUCCESS;
 }

@@ -3,12 +3,14 @@
 #include <stdarg.h>
 #include <yara.h>
 
-const char *dummy_rule = "\
-rule dummy { \
-  condition: \
-    \"dummy\"\
-}\
-";
+const char *dummy_rule =
+" rule dummy { "
+"   strings: "
+"     $str = \"dummy\" "
+"   condition: "
+"     $str "
+" } ";
+
 
 const char buf1[] = "sapatopatopato";
 const char buf2[] = "dummybuf";
@@ -62,10 +64,10 @@ int main ()
   chk (yr_compiler_add_string (compiler, dummy_rule, NULL));
   chk (yr_compiler_get_rules (compiler, &rules));
 
-  puts ("buf2");
-  chk (yr_rules_scan_mem (rules, buf2, sizeof buf2, 0, callback, 0, 0));
   puts ("buf1");
   chk (yr_rules_scan_mem (rules, buf1, sizeof buf1, 0, callback, 0, 0));
+  puts ("buf2");
+  chk (yr_rules_scan_mem (rules, buf2, sizeof buf2, 0, callback, 0, 0));
 
   yr_rules_destroy (rules);
   yr_compiler_destroy (compiler);

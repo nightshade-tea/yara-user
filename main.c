@@ -1,6 +1,5 @@
-#include <stdlib.h>
 #include <stdio.h>
-#include <stdarg.h>
+#include <stdlib.h>
 #include <yara.h>
 
 const char *dummy_rule =
@@ -11,67 +10,70 @@ const char *dummy_rule =
 "     $str "
 " } ";
 
-
 const char buf1[] = "sapatopatopato";
-const char buf2[] = "dummybuf";
+const char buf2[] = "stuffdummybuf";
 
-/* -------------------------------------------------------------------------- */
+static int callback(YR_SCAN_CONTEXT *context, int message, void *message_data,
+                    void *user_data) {
+  switch (message) {
+  case CALLBACK_MSG_RULE_MATCHING:
+    printf("rule=%s -> match\n", ((YR_RULE *)message_data)->identifier);
+    break;
 
-#define pe(err) \
-  error ("(%s:%d) %s() failed: %d\n", __FILE__, __LINE__, __func__, err)
+  case CALLBACK_MSG_RULE_NOT_MATCHING:
+    printf("rule=%s -> no match\n", ((YR_RULE *)message_data)->identifier);
+    break;
 
-#define nzpe(err) \
-  if (err) pe (err)
+  case CALLBACK_MSG_SCAN_FINISHED:
+    puts("scan finished");
+    break;
 
-#define chk(expr) \
-  nzpe ((expr))
-
-static __attribute__ ((noreturn)) void
-error (const char *restrict format, ...)
-{
-  va_list args;
-
-  va_start (args, format);
-  vfprintf (stderr, format, args);
-  va_end (args);
-
-  exit (EXIT_FAILURE);
-}
-
-/* -------------------------------------------------------------------------- */
-
-static int
-callback(
-    YR_SCAN_CONTEXT* context,
-    int message,
-    void* message_data,
-    void* user_data)
-{
-  printf ("message=%d\n", message);
+  case CALLBACK_MSG_CONSOLE_LOG:
+    printf("console log: %s\n", (char *)message_data);
+    break;
+  }
 
   return CALLBACK_CONTINUE;
 }
 
-int main ()
-{
+int main() {
   YR_COMPILER *compiler;
   YR_RULES *rules;
   int err;
 
-  chk (yr_initialize ());
-  chk (yr_compiler_create (&compiler));
+  if ((err = yr_initialize())) {
+    fprintf(stderr, "yr_initialize(): err=%d", err);
+    return EXIT_FAILURE;
+  }
+  if ((err = yr_compiler_create(&compiler))) {
+    fprintf(stderr, "yr_compiler_create(): err=%d", err);
+    return EXIT_FAILURE;
+  }
 
-  chk (yr_compiler_add_string (compiler, dummy_rule, NULL));
-  chk (yr_compiler_get_rules (compiler, &rules));
+  if ((err = yr_compiler_add_string(compiler, dummy_rule, NULL))) {
+    fprintf(stderr, "yr_compiler_add_string(): err=%d", err);
+    return EXIT_FAILURE;
+  }
+  if ((err = yr_compiler_get_rules(compiler, &rules))) {
+    fprintf(stderr, "yr_compiler_get_rules(): err=%d", err);
+    return EXIT_FAILURE;
+  }
 
-  puts ("buf1");
-  chk (yr_rules_scan_mem (rules, buf1, sizeof buf1, 0, callback, 0, 0));
-  puts ("buf2");
-  chk (yr_rules_scan_mem (rules, buf2, sizeof buf2, 0, callback, 0, 0));
+  puts("buf1");
+  if ((err = yr_rules_scan_mem(rules, buf1, sizeof buf1, 0, callback, 0, 0))) {
+    fprintf(stderr, "yr_rules_scan_mem(): err=%d", err);
+    return EXIT_FAILURE;
+  }
 
-  yr_rules_destroy (rules);
-  yr_compiler_destroy (compiler);
-  yr_finalize ();
+  puts("buf2");
+  if ((err = yr_rules_scan_mem(rules, buf2, sizeof buf2, 0, callback, 0, 0))) {
+    fprintf(stderr, "yr_rules_scan_mem(): err=%d", err);
+    return EXIT_FAILURE;
+  }
+
+  yr_rules_destroy(rules);
+  yr_compiler_destroy(compiler);
+  yr_finalize();
 
   return EXIT_SUCCESS;
 }

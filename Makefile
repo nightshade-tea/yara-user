@@ -4,5 +4,7 @@ LDLIBS := -lyara
 
 build: main
 
+main: main.o scan.o
+
 clean:
-	rm -rf main
+	rm -rf main *.o

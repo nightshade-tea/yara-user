@@ -14,6 +14,7 @@
  * +-----------+-----------------------------+---------+
  */
 
+/* -------------------------------------------------------------------------- */
 /* constructor/destructor --------------------------------------------------- */
 
 struct machyara_scan *machyara_scan_create(void) {
@@ -41,7 +42,8 @@ void machyara_scan_destroy(struct machyara_scan *scan) {
 /* -------------------------------------------------------------------------- */
 /* rule creation/appending -------------------------------------------------- */
 
-static struct machyara_rule *rule_create(const char *identifier, uint8_t matched) {
+static struct machyara_rule *rule_create(const char *identifier,
+    uint8_t matched) {
   struct machyara_rule *r;
   size_t fullsz;
 
@@ -58,7 +60,8 @@ static struct machyara_rule *rule_create(const char *identifier, uint8_t matched
   return r;
 }
 
-int machyara_scan_add_rule(struct machyara_scan *scan, const char *identifier, uint8_t matched) {
+int machyara_scan_add_rule(struct machyara_scan *scan, const char *identifier,
+    uint8_t matched) {
   struct machyara_rule *r;
 
   if (!(r = rule_create(identifier, matched)))

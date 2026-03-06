@@ -19,7 +19,8 @@ struct machyara_scan {
 struct machyara_scan *machyara_scan_create(void);
 void machyara_scan_destroy(struct machyara_scan *scan);
 
-int machyara_scan_add_rule(struct machyara_scan *scan, const char *identifier, uint8_t matched);
+int machyara_scan_add_rule(struct machyara_scan *scan, const char *identifier,
+    uint8_t matched);
 
 int machyara_serialize(void *dest, struct machyara_scan *src);
 int machyara_deserialize(struct machyara_scan *dest, void *src);

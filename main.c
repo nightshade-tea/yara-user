@@ -8,6 +8,47 @@
 
 /* -------------------------------------------------------------------------- */
 
+/* let
+ *
+ * Bsz: buffer size
+ * Osz: overlap region size
+ * Fsz: fresh data region size
+ * Plen: pattern length
+ *
+ * with a sliding window, we can guarantee that any pattern with
+ *
+ *   Plen <= Osz + 1
+ *
+ * can be accurately determined to have been matched or not. patterns longer
+ * than that may be incorrectly determined as not matched (false negatives).
+ *
+ * this limitation comes from yara's inability to match patterns between memory
+ * blocks. we implement an overlap region to try to minimize this issue.
+ */
+
+/* scanned memory block structure
+ *
+ *      overlap region         fresh data region
+ * +-----------------------+-----------------------+
+ * | Osz last bytes from   | Fsz new bytes from    |
+ * | previous memory block | user provided buffer  |
+ * +-----------------------+-----------------------+
+ * |             +---------|--+                    |
+ * |             | pattern |  |                    |
+ * |             |         |  |                    |
+ * |             +---------|--+                    |
+ * +-----------------------+-----------------------+
+ *               <--- Plen --->
+ * <-------- Osz ---------> <------- Fsz ---------->
+ * <--------------------- Bsz --------------------->
+ */
+
+#define INTERNAL_BUFFER_SIZE (32 * 1024 * 1024)
+#define OVERLAP_REGION_SIZE (2 * 1024 * 1024)
+#define FRESH_DATA_REGION_SIZE (INTERNAL_BUFFER_SIZE - OVERLAP_REGION_SIZE)
+
+/* -------------------------------------------------------------------------- */
+
 #define dbg(...) fprintf(stderr, __VA_ARGS__)
 
 #define check(expr) \
